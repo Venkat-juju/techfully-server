@@ -2,6 +2,7 @@ package com.techfully.interview.rest;
 
 import java.util.List;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +26,7 @@ public class CustomerRestController {
 	}
 
 	// to get all the customers
+	@CrossOrigin(origins= "http://localhost:3000")
 	@GetMapping("/api/customers")
 	public List<Customer> getCustomers() {
 		
@@ -32,40 +34,70 @@ public class CustomerRestController {
 	}
 	
 	// to get a particular customer using id
+	@CrossOrigin(origins= "http://localhost:3000")
 	@GetMapping("/api/customers/{customerId}")
 	public Customer getCustomer(@PathVariable int customerId) {
 		
-		return customerService.getCustomer(customerId);
+		Customer theCustomer = customerService.getCustomer(customerId);
+		
+		if (theCustomer == null) {
+			throw new CustomerNotFoundException("There is no customer with id: " + customerId);
+		}
+		
+		return theCustomer;
 	}
 	
 	// to add a new customer
-	@PostMapping("/api/customers/")
-	public void addCustomer(@RequestBody Customer theCustomer) {
+	@PostMapping("/api/customers")
+	public String addCustomer(@RequestBody Customer theCustomer) {
 		
+		System.out.println("inside the post method");
 		// to make sure the customer is a new customer.
 		theCustomer.setId(0);
 		
 		customerService.saveCustomer(theCustomer);
+		
+		return "SUCCESS";
 	}
 	
-	// to update the existing customer
-	@PutMapping("/api/customers/")
-	public void updateCustomer(@RequestBody Customer theCustomer) {
+	// to update the existing customer and return the updated customer
+	@CrossOrigin(origins= "http://localhost:3000")
+	@PutMapping("/api/customers")
+	public String updateCustomer(@RequestBody Customer theCustomer) {
+		
+		Customer cust = customerService.getCustomer(theCustomer.getId());
+		
+		if (cust == null) {
+			throw new CustomerNotFoundException("There is no customer with id: " + theCustomer.getId());
+		}
 		
 		customerService.saveCustomer(theCustomer);
+		
+		return "SUCCESS";
 	}
 	
 	// deleting all the customers
-	@DeleteMapping("/api/customers/")
-	public void deleteAll() {
+	@CrossOrigin(origins= "http://localhost:3000")
+	@DeleteMapping("/api/customers")
+	public String deleteAll() {
 		
 		customerService.deleteAll();
+		
+		return "SUCCESS";
 	}
 	
 	// to delete a particular customer using the id
+	@CrossOrigin(origins= "http://localhost:3000")
 	@DeleteMapping("/api/customers/{customerId}")
-	public void deleteCustomer(@PathVariable int customerId) {
+	public Customer deleteCustomer(@PathVariable int customerId) {
+		
+		Customer customer = customerService.getCustomer(customerId);
+		
+		if (customer == null)
+			throw new CustomerNotFoundException("There is no customer with id: " + customerId);
 		
 		customerService.deleteCustomer(customerId);
+		
+		return customer;
 	}
 }
